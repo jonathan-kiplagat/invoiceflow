@@ -41,7 +41,7 @@ def record_payment(db: Session, inv: Invoice, data: PaymentIn) -> tuple[Payment,
     balance = inv.total - inv.amount_paid
     if data.amount > balance:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            422,
             f"Amount exceeds the outstanding balance of {format_money(balance, inv.currency)}",
         )
     payment = Payment(

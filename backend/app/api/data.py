@@ -34,13 +34,13 @@ async def backup_restore(
     limit = get_settings().max_backup_bytes
     raw = await file.read(limit + 1)
     if len(raw) > limit:
-        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Backup file is too large")
+        raise HTTPException(413, "Backup file is too large")
     try:
         data = json.loads(raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError):
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "The file is not valid JSON") from None
+        raise HTTPException(422, "The file is not valid JSON") from None
     if not isinstance(data, dict):
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "This is not an InvoiceFlow backup file")
+        raise HTTPException(422, "This is not an InvoiceFlow backup file")
     return {"restored": restore_backup(db, business, data)}
 
 

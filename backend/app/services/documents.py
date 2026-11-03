@@ -185,7 +185,7 @@ def update_invoice(db: Session, business: Business, inv: Invoice, payload) -> No
         inv.sent_at = utcnow()
     if inv.amount_paid > inv.total:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            422,
             "The new total is lower than the payments already recorded. Remove or adjust payments first.",
         )
     refresh_invoice(inv)

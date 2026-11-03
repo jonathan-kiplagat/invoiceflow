@@ -106,7 +106,7 @@ def _coerce(model, data: dict) -> dict:
 
 def restore_backup(db: Session, business: Business, data: dict) -> dict:
     if data.get("format") != FORMAT or data.get("version") != VERSION:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "This is not an InvoiceFlow backup file")
+        raise HTTPException(422, "This is not an InvoiceFlow backup file")
     bid = business.id
     try:
         # 1. Wipe existing data (children first).
@@ -194,7 +194,7 @@ def restore_backup(db: Session, business: Business, data: dict) -> dict:
         raise
     except (KeyError, TypeError, ValueError, InvalidOperation, IntegrityError) as exc:
         db.rollback()
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, f"The backup file is damaged or incomplete ({type(exc).__name__})") from None
+        raise HTTPException(422, f"The backup file is damaged or incomplete ({type(exc).__name__})") from None
     except Exception:
         db.rollback()
         raise

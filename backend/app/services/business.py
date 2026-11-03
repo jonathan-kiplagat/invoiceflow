@@ -90,7 +90,7 @@ def process_logo(data: bytes) -> tuple[bytes, str]:
     """
     settings = get_settings()
     if len(data) > settings.max_logo_bytes:
-        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Logo must be 2 MB or smaller")
+        raise HTTPException(413, "Logo must be 2 MB or smaller")
     try:
         img = Image.open(io.BytesIO(data))
         img.verify()

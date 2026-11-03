@@ -198,9 +198,9 @@ def mark_sent(invoice_id: int, business: CurrentBusiness, db: DB) -> Invoice:
     inv = owned_invoice(db, business, invoice_id)
     docs.ensure_editable_invoice(inv)
     if not inv.items:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Add at least one item before sending")
+        raise HTTPException(422, "Add at least one item before sending")
     if inv.customer_id is None:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Choose a customer before sending")
+        raise HTTPException(422, "Choose a customer before sending")
     if inv.sent_at is None:
         inv.sent_at = utcnow()
         refresh_invoice(inv)
@@ -288,7 +288,7 @@ def email_invoice(invoice_id: int, data: EmailSendIn, business: CurrentBusiness,
     try:
         to = str(TypeAdapter(EmailStr).validate_python(data.to.strip()))
     except ValidationError:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Enter a valid email address") from None
+        raise HTTPException(422, "Enter a valid email address") from None
     attachment = None
     if data.attach_pdf:
         pdf = render_document(view_from_model(inv, business), inv.template, business.logo)

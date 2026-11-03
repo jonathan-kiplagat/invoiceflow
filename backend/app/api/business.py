@@ -35,7 +35,7 @@ def update_business(data: BusinessIn, business: CurrentBusiness, db: DB) -> Busi
     if data.settings.default_tax_rate_id is not None and data.settings.default_tax_rate_id not in {
         t.id for t in business.tax_rates
     }:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Default tax rate not found")
+        raise HTTPException(422, "Default tax rate not found")
     for k, v in data.profile.model_dump().items():
         setattr(business, k, v)
     for k, v in data.settings.model_dump().items():
@@ -50,7 +50,7 @@ async def upload_logo(business: CurrentBusiness, db: DB, file: UploadFile = File
     limit = get_settings().max_logo_bytes
     data = await file.read(limit + 1)
     if len(data) > limit:
-        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Logo must be 2 MB or smaller")
+        raise HTTPException(413, "Logo must be 2 MB or smaller")
     set_logo(business, data)
     db.commit()
     return business_out(business)
@@ -78,6 +78,7 @@ def create_tax_rate(data: TaxRateIn, business: CurrentBusiness, db: DB) -> TaxRa
     except IntegrityError:
         db.rollback()
         raise HTTPException(status.HTTP_409_CONFLICT, "A tax rate with this name already exists") from None
+    db.refresh(rate)
     return rate
 
 
@@ -97,6 +98,7 @@ def update_tax_rate(rate_id: int, data: TaxRateIn, business: CurrentBusiness, db
     except IntegrityError:
         db.rollback()
         raise HTTPException(status.HTTP_409_CONFLICT, "A tax rate with this name already exists") from None
+    db.refresh(rate)
     return rate
 
 

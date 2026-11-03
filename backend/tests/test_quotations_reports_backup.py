@@ -84,10 +84,11 @@ def test_dashboard_and_reports_separate_invoiced_collected_outstanding(client, u
 
 def test_reports_are_per_currency(client, user):
     h = user["headers"]
-    usd = make_invoice(client, h, None, currency="USD")
-    client.post(f"{API}/invoices/{usd['id']}/send", headers=h)
+    c = make_customer(client, h)
+    usd = make_invoice(client, h, c["id"], currency="USD")
+    assert client.post(f"{API}/invoices/{usd['id']}/send", headers=h).status_code == 200
     kes = client.get(f"{API}/reports/dashboard", headers=h).json()
-    assert kes["totals"]["invoiced"] == "0" or kes["totals"]["invoiced"] == "0.00"
+    assert kes["totals"]["invoiced"] == "0.00"
     assert "USD" in kes["currencies"]
     usd_d = client.get(f"{API}/reports/dashboard", params={"currency": "USD"}, headers=h).json()
     assert usd_d["totals"]["invoiced"] == "71920.00"

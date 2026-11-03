@@ -30,7 +30,7 @@ OPEN = ("sent", "partially_paid", "overdue")
 
 
 def s(d: Decimal) -> str:
-    return format(d, "f")
+    return format(Decimal(d).quantize(Decimal("0.01")), "f")
 
 
 def _months_back(today: date, n: int) -> list[tuple[int, int]]:
