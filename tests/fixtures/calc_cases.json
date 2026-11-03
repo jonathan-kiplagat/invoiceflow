@@ -1,0 +1,81 @@
+{
+  "_comment": "Shared invoice arithmetic fixtures. Used by backend (pytest) and frontend (vitest) so both sides compute identical totals.",
+  "cases": [
+    {
+      "name": "single item, exclusive VAT 16%",
+      "pricing_mode": "exclusive",
+      "shipping": "0",
+      "items": [{ "quantity": "1", "unit_price": "1000.00", "discount_type": "percent", "discount_value": "0", "tax_rate": "16" }],
+      "lines": [{ "subtotal": "1000.00", "discount": "0.00", "tax": "160.00", "total": "1160.00" }],
+      "totals": { "subtotal": "1000.00", "discount_total": "0.00", "tax_total": "160.00", "shipping": "0.00", "total": "1160.00" }
+    },
+    {
+      "name": "multiple items with percent and fixed discounts plus shipping",
+      "pricing_mode": "exclusive",
+      "shipping": "350.00",
+      "items": [
+        { "quantity": "3", "unit_price": "499.99", "discount_type": "percent", "discount_value": "10", "tax_rate": "16" },
+        { "quantity": "2.5", "unit_price": "1200.00", "discount_type": "amount", "discount_value": "250.00", "tax_rate": "16" },
+        { "quantity": "1", "unit_price": "80.00", "discount_type": "percent", "discount_value": "0", "tax_rate": "0" }
+      ],
+      "lines": [
+        { "subtotal": "1499.97", "discount": "150.00", "tax": "216.00", "total": "1565.97" },
+        { "subtotal": "3000.00", "discount": "250.00", "tax": "440.00", "total": "3190.00" },
+        { "subtotal": "80.00", "discount": "0.00", "tax": "0.00", "total": "80.00" }
+      ],
+      "totals": { "subtotal": "4579.97", "discount_total": "400.00", "tax_total": "656.00", "shipping": "350.00", "total": "5185.97" }
+    },
+    {
+      "name": "tax inclusive pricing",
+      "pricing_mode": "inclusive",
+      "shipping": "0",
+      "items": [
+        { "quantity": "1", "unit_price": "1160.00", "discount_type": "percent", "discount_value": "0", "tax_rate": "16" },
+        { "quantity": "2", "unit_price": "99.99", "discount_type": "percent", "discount_value": "0", "tax_rate": "16" }
+      ],
+      "lines": [
+        { "subtotal": "1160.00", "discount": "0.00", "tax": "160.00", "total": "1160.00" },
+        { "subtotal": "199.98", "discount": "0.00", "tax": "27.58", "total": "199.98" }
+      ],
+      "totals": { "subtotal": "1359.98", "discount_total": "0.00", "tax_total": "187.58", "shipping": "0.00", "total": "1359.98" }
+    },
+    {
+      "name": "half-up rounding on fractional quantities",
+      "pricing_mode": "exclusive",
+      "shipping": "0",
+      "items": [
+        { "quantity": "0.125", "unit_price": "10.00", "discount_type": "percent", "discount_value": "0", "tax_rate": "16" },
+        { "quantity": "1", "unit_price": "0.05", "discount_type": "percent", "discount_value": "50", "tax_rate": "0" },
+        { "quantity": "3", "unit_price": "33.33", "discount_type": "percent", "discount_value": "0", "tax_rate": "8" }
+      ],
+      "lines": [
+        { "subtotal": "1.25", "discount": "0.00", "tax": "0.20", "total": "1.45" },
+        { "subtotal": "0.05", "discount": "0.03", "tax": "0.00", "total": "0.02" },
+        { "subtotal": "99.99", "discount": "0.00", "tax": "8.00", "total": "107.99" }
+      ],
+      "totals": { "subtotal": "101.29", "discount_total": "0.03", "tax_total": "8.20", "shipping": "0.00", "total": "109.46" }
+    },
+    {
+      "name": "fixed discount larger than line is capped",
+      "pricing_mode": "exclusive",
+      "shipping": "0",
+      "items": [{ "quantity": "1", "unit_price": "100.00", "discount_type": "amount", "discount_value": "150.00", "tax_rate": "16" }],
+      "lines": [{ "subtotal": "100.00", "discount": "100.00", "tax": "0.00", "total": "0.00" }],
+      "totals": { "subtotal": "100.00", "discount_total": "100.00", "tax_total": "0.00", "shipping": "0.00", "total": "0.00" }
+    },
+    {
+      "name": "large values keep cent precision",
+      "pricing_mode": "exclusive",
+      "shipping": "0.10",
+      "items": [
+        { "quantity": "1000", "unit_price": "123456.78", "discount_type": "percent", "discount_value": "2.5", "tax_rate": "16" },
+        { "quantity": "3", "unit_price": "0.10", "discount_type": "percent", "discount_value": "0", "tax_rate": "0" }
+      ],
+      "lines": [
+        { "subtotal": "123456780.00", "discount": "3086419.50", "tax": "19259257.68", "total": "139629618.18" },
+        { "subtotal": "0.30", "discount": "0.00", "tax": "0.00", "total": "0.30" }
+      ],
+      "totals": { "subtotal": "123456780.30", "discount_total": "3086419.50", "tax_total": "19259257.68", "shipping": "0.10", "total": "139629618.58" }
+    }
+  ]
+}
