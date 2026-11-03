@@ -122,8 +122,9 @@ def update_me(data: UpdateMeIn, user: CurrentUser, db: DB) -> User:
     return user
 
 
-@router.post("/change-password", status_code=204, dependencies=[Depends(auth_rate_limit)])
-def change_password(data: ChangePasswordIn, user: CurrentUser, db: DB) -> None:
+@router.post("/change-password", response_model=TokenOut, dependencies=[Depends(auth_rate_limit)])
+def change_password(data: ChangePasswordIn, user: CurrentUser, db: DB) -> TokenOut:
+    """Change the password, sign out every other session, and return fresh tokens for this one."""
     if not verify_password(data.current_password, user.password_hash):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is incorrect")
     user.password_hash = hash_password(data.new_password)
@@ -133,3 +134,4 @@ def change_password(data: ChangePasswordIn, user: CurrentUser, db: DB) -> None:
         .values(revoked_at=utcnow())
     )
     db.commit()
+    return _issue_tokens(db, user)

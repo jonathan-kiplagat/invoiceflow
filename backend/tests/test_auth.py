@@ -65,7 +65,10 @@ def test_logout_revokes_refresh(client):
 def test_change_password(client):
     u = register(client, email="pw@example.co.ke")
     r = client.post("/api/v1/auth/change-password", json={"current_password": "s3cure-pass", "new_password": "n3w-password"}, headers=u["headers"])
-    assert r.status_code == 204
+    assert r.status_code == 200 and r.json()["access_token"]
+    # Older sessions are signed out, the new tokens keep this one working.
+    assert client.post("/api/v1/auth/refresh", json={"refresh_token": r.json()["refresh_token"]}).status_code == 200
+    assert client.post("/api/v1/auth/refresh", json={"refresh_token": u["tokens"]["refresh_token"]}).status_code == 401
     assert client.post("/api/v1/auth/login", json={"email": "pw@example.co.ke", "password": "s3cure-pass"}).status_code == 401
     assert client.post("/api/v1/auth/login", json={"email": "pw@example.co.ke", "password": "n3w-password"}).status_code == 200
 

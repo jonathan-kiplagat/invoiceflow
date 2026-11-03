@@ -95,14 +95,7 @@ def export_customers(business: CurrentBusiness, db: DB) -> StreamingResponse:
     for c in customers:
         s = stats[c.id]
         w.writerow([csv_safe(c.name), csv_safe(c.company), csv_safe(c.email), c.phone or "", csv_safe((c.billing_address or "").replace("\n", ", ")), csv_safe(c.tax_id), "yes" if c.is_archived else "no", s["total_invoiced"], s["total_paid"], s["outstanding"]])
-    return _csv(buf.getvalue(), "customers.csv")
-
-
-def _csv(content: str, filename: str) -> StreamingResponse:
-    return StreamingResponse(
-        iter(["﻿" + content]), media_type="text/csv; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
+    return csv_response(buf.getvalue(), "customers")
 
 
 @router.get("/{customer_id}")
