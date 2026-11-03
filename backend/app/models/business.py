@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
-    DateTime,
     ForeignKey,
     Integer,
     LargeBinary,
@@ -16,7 +15,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.database.types import Rate
+from app.database.types import Rate, UTCDateTime
 from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
@@ -53,7 +52,7 @@ class Business(TimestampMixin, Base):
 
     logo: Mapped[bytes | None] = mapped_column(LargeBinary)
     logo_mime: Mapped[str | None] = mapped_column(String(32))
-    logo_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    logo_updated_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
     owner: Mapped[User] = relationship(back_populates="business")
     settings: Mapped[BusinessSettings] = relationship(

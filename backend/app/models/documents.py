@@ -12,7 +12,6 @@ from decimal import Decimal
 from sqlalchemy import (
     JSON,
     Date,
-    DateTime,
     ForeignKey,
     Index,
     Integer,
@@ -22,7 +21,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, declared_attr, mapped_column, relationship
 
-from app.database.types import Money, Quantity, Rate
+from app.database.types import Money, Quantity, Rate, UTCDateTime
 from app.models.base import Base, TimestampMixin
 
 
@@ -54,7 +53,7 @@ class DocumentMixin(TimestampMixin):
     tax_total: Mapped[Decimal] = mapped_column(Money, nullable=False, default=Decimal("0"))
     total: Mapped[Decimal] = mapped_column(Money, nullable=False, default=Decimal("0"))
 
-    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    sent_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
     @declared_attr
     def business_id(cls) -> Mapped[int]:
@@ -100,7 +99,7 @@ class Invoice(DocumentMixin, Base):
     due_date: Mapped[date] = mapped_column(Date, nullable=False)
     amount_paid: Mapped[Decimal] = mapped_column(Money, nullable=False, default=Decimal("0"))
     balance_due: Mapped[Decimal] = mapped_column(Money, nullable=False, default=Decimal("0"))
-    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    cancelled_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     share_token: Mapped[str | None] = mapped_column(String(64), unique=True)
     quotation_id: Mapped[int | None] = mapped_column(ForeignKey("quotations.id", ondelete="SET NULL"))
 
@@ -135,7 +134,7 @@ class Quotation(DocumentMixin, Base):
     converted_invoice_id: Mapped[int | None] = mapped_column(
         ForeignKey("invoices.id", ondelete="SET NULL", use_alter=True)
     )
-    converted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    converted_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
     items: Mapped[list[QuotationItem]] = relationship(
         back_populates="quotation", cascade="all, delete-orphan", order_by="QuotationItem.position"
@@ -186,4 +185,4 @@ class EmailLog(Base):
     subject: Mapped[str] = mapped_column(String(255), nullable=False)
     status: Mapped[str] = mapped_column(String(10), nullable=False)  # accepted | failed
     error: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)

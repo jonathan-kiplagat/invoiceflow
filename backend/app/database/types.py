@@ -5,9 +5,10 @@ coerce NUMERIC to floating point), so on SQLite the same columns are stored as T
 converted to/from Decimal at the boundary. Application code only ever sees Decimal.
 """
 
+from datetime import UTC, datetime
 from decimal import ROUND_HALF_UP, Decimal
 
-from sqlalchemy import Numeric, String
+from sqlalchemy import DateTime, Numeric, String
 from sqlalchemy.types import TypeDecorator
 
 
@@ -59,3 +60,27 @@ class Rate(_ExactDecimal):
     cache_ok = True
     places = 3
     precision = 9
+
+
+class UTCDateTime(TypeDecorator):
+    """Timezone-aware UTC timestamps on every database.
+
+    SQLite does not store timezone offsets, so values come back naive; this re-attaches UTC
+    so the API always emits unambiguous ISO-8601 times (e.g. ...+00:00) that browsers convert
+    correctly to Nairobi time.
+    """
+
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if isinstance(value, str):
+            value = datetime.fromisoformat(value)
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=UTC)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=UTC)
+        return value

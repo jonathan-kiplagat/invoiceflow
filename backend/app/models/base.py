@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, MetaData
+from sqlalchemy import MetaData
+from app.database.types import UTCDateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from app.core.timeutil import utcnow
@@ -19,7 +20,7 @@ class Base(DeclarativeBase):
 
 
 class TimestampMixin:
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False
+        UTCDateTime, default=utcnow, onupdate=utcnow, nullable=False
     )
