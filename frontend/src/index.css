@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    overflow-x: hidden;
+    font-feature-settings: "cv11", "ss01";
+  }
+  :root { color-scheme: light; }
+  .dark { color-scheme: dark; }
+  /* Tabular figures keep amounts aligned in tables and totals. */
+  .tnum { font-variant-numeric: tabular-nums; }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="date"] { min-height: 2.5rem; }
+}
+
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; inset: 0; }
+}
