@@ -4,7 +4,25 @@
 
 InvoiceFlow is an installable Progressive Web App for creating invoices and quotations, generating print-ready PDFs, sharing them over WhatsApp or email, and tracking M-Pesa, bank and cash payments. It is built Kenya-first (KSh, KRA PIN, configurable VAT, M-Pesa instructions, Africa/Nairobi time) and works with other major currencies too.
 
-> Screenshots live in [`docs/screenshots/`](docs/screenshots). They are captured by the end-to-end test suite (`tests/e2e`).
+## Screenshots
+
+*Captured automatically by the end-to-end test suite in a real browser.*
+
+| Dashboard (desktop) | Invoice with payments (desktop) |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard-1440.png) | ![Invoice detail](docs/screenshots/invoice-1440.png) |
+
+| Phone: dashboard | Phone: new invoice | Phone: offline draft, pending sync | Phone: share sheet |
+|---|---|---|---|
+| ![](docs/screenshots/dashboard-390.png) | ![](docs/screenshots/editor-390.png) | ![](docs/screenshots/offline-pending-390.png) | ![](docs/screenshots/share-390.png) |
+
+| Reports | Conflict resolution |
+|---|---|
+| ![Reports](docs/screenshots/reports-1440.png) | ![Conflict](docs/screenshots/conflict-1440.png) |
+
+**The four PDF templates** — Modern Minimal, Corporate Professional, Elegant Business, Classic Standard ([sample PDFs](docs)):
+
+![PDF templates](docs/screenshots/pdf-templates.png)
 
 ---
 
@@ -154,11 +172,11 @@ cd frontend && npm test
 
 # End-to-end in a real browser (desktop + 360/390/430/768/1024/1440 px, offline, sync)
 cd frontend && npm run build && cd ..
-pip install playwright && playwright install chromium
-pytest tests/e2e
+pip install -r backend/requirements-dev.txt && playwright install chromium
+E2E_PYTHON=backend/.venv/bin/python pytest tests/e2e
 ```
 
-See [docs/TESTING.md](docs/TESTING.md) for what each suite covers and the latest recorded results.
+**Latest results (3 Nov 2026):** backend **74/74** passed on SQLite *and* PostgreSQL 16 · frontend **21/21** · end-to-end **13/13** (stable over 3 consecutive runs). See [docs/TESTING.md](docs/TESTING.md) for details.
 
 ## Deployment
 
