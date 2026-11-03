@@ -58,9 +58,12 @@ def server():
     }
     python = os.environ.get("E2E_PYTHON", sys.executable)
     subprocess.run([python, "-m", "alembic", "upgrade", "head"], cwd=BACKEND, env=env, check=True)
+    # Log to a file: an unread PIPE fills up and blocks the server mid-run.
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    log = open(ARTIFACTS / "server.log", "w")
     proc = subprocess.Popen(
         [python, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", str(PORT)],
-        cwd=BACKEND, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        cwd=BACKEND, env=env, stdout=log, stderr=subprocess.STDOUT,
     )
     for _ in range(100):
         try:
@@ -70,11 +73,14 @@ def server():
             time.sleep(0.2)
     else:
         proc.kill()
-        out = proc.stdout.read().decode() if proc.stdout else ""
-        raise RuntimeError(f"Server did not start:\n{out}")
+        raise RuntimeError(f"Server did not start:\n{(ARTIFACTS / 'server.log').read_text()}")
     yield BASE_URL
     proc.terminate()
-    proc.wait(timeout=10)
+    try:
+        proc.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+    log.close()
 
 
 @pytest.fixture(scope="session")

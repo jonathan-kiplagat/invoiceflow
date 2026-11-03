@@ -37,6 +37,20 @@ def api(page: Page, method: str, path: str, data=None):
     return r.json() if r.status != 204 else None
 
 
+def wait_for_server(page: Page, path: str, check, timeout_s: float = 20):
+    """Poll the API until `check(json)` holds — the server is the source of truth for 'synced'."""
+    import time
+
+    deadline = time.time() + timeout_s
+    last = None
+    while time.time() < deadline:
+        last = api(page, "GET", path)
+        if check(last):
+            return last
+        page.wait_for_timeout(300)
+    raise AssertionError(f"Server never reached the expected state for {path}: {last}")
+
+
 def no_horizontal_overflow(page: Page) -> int:
     return page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
 
@@ -94,11 +108,15 @@ def test_invoice_lifecycle_desktop(context_factory):
     visible(page.get_by_label("Item 2 description")).fill("Hosting, 12 months")
     visible(page.get_by_label("Item 2 quantity")).fill("1")
     visible(page.get_by_label("Item 2 unit price")).fill("12000.50")
-    # Live totals: (50,000 + 12,000.50) x 1.16 = 71,920.58
-    expect(page.get_by_text("KSh 71,920.58").first).to_be_visible()
+    # No tax by default (nothing is hard-coded): 50,000 + 12,000.50
+    expect(page.get_by_text("KSh 62,000.50").first).to_be_visible()
+    # Apply the configurable VAT rate to the first line only: 50,000 x 1.16 + 12,000.50
+    visible(page.get_by_label("Tax rate")).select_option(label="VAT (standard) (16%)")
+    expect(page.get_by_text("KSh 70,000.50").first).to_be_visible()
 
     page.get_by_role("button", name="Preview").first.click()
-    expect(page.get_by_label("Invoice preview")).to_be_visible()
+    expect(page.get_by_role("dialog", name="Invoice preview")).to_be_visible()
+    expect(page.get_by_role("dialog").get_by_text("Website redesign")).to_be_visible()
     page.keyboard.press("Escape")
 
     page.get_by_role("button", name="Save & mark sent").first.click()
@@ -197,8 +215,11 @@ def test_offline_draft_persists_and_syncs_once(context_factory):
 
     ctx.set_offline(False)
     page.evaluate("window.dispatchEvent(new Event('online'))")
-    expect(page.get_by_text("Synced", exact=True).first).to_be_visible(timeout=15000)
-    # Exactly one new invoice reached the server (1 seeded + 1 offline).
+    # Exactly one new invoice reaches the server (1 seeded + 1 offline) ...
+    wait_for_server(page, "/invoices", lambda r: r["total"] == 2)
+    # ... the draft is reported as synced, and nothing is left pending.
+    expect(page.locator("li").filter(has_text="Wanjiku Kamau").get_by_text("Synced", exact=True)).to_be_visible(timeout=15000)
+    page.wait_for_timeout(1500)
     assert api(page, "GET", "/invoices")["total"] == 2
 
 
@@ -224,9 +245,11 @@ def test_sync_failure_is_recoverable_without_duplicates(context_factory):
     page.goto("/sync")
     expect(page.get_by_text("Sync failed").first).to_be_visible()
     page.get_by_role("button", name="Retry").first.click()
-    expect(page.get_by_text("Synced", exact=True).first).to_be_visible(timeout=15000)
+    wait_for_server(page, "/invoices", lambda r: r["total"] == 1)
+    expect(page.locator("li").filter(has_text="No customer").get_by_text("Synced", exact=True)).to_be_visible(timeout=15000)
     page.unroute(re.compile(r".*/api/v1/invoices$"))
-    assert api(page, "GET", "/invoices")["total"] == 1
+    page.wait_for_timeout(1500)
+    assert api(page, "GET", "/invoices")["total"] == 1  # retried, but not duplicated
 
 
 def test_conflicting_edit_is_detected_not_overwritten(context_factory):
@@ -246,12 +269,13 @@ def test_conflicting_edit_is_detected_not_overwritten(context_factory):
     expect(page.get_by_text("Needs review").first).to_be_visible()
     assert api(page, "GET", f"/invoices/{inv['id']}")["notes"] == "Edited on the phone"
     page.get_by_role("button", name="Resolve").click()
-    expect(page.get_by_text("Server version")).to_be_visible()
+    expect(page.get_by_text("Server version", exact=True)).to_be_visible()
     page.screenshot(path=str(ARTIFACTS / "conflict-1440.png"))
     page.get_by_role("button", name=re.compile("Keep both")).click()
-    expect(page.get_by_text("Synced", exact=True).first).to_be_visible(timeout=15000)
-    assert api(page, "GET", f"/invoices/{inv['id']}")["notes"] == "Edited on the phone"
-    assert api(page, "GET", "/invoices")["total"] == 2
+    listed = wait_for_server(page, "/invoices", lambda r: r["total"] == 2)
+    assert api(page, "GET", f"/invoices/{inv['id']}")["notes"] == "Edited on the phone"  # never overwritten
+    copy_id = next(i["id"] for i in listed["items"] if i["id"] != inv["id"])
+    assert api(page, "GET", f"/invoices/{copy_id}")["notes"] == "Edited on the laptop"  # both versions kept
 
 
 def test_screenshots_for_readme(context_factory):
