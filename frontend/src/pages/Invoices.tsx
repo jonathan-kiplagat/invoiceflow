@@ -210,8 +210,8 @@ export default function Invoices() {
         ) : (
           <>
             {/* Desktop table */}
-            <div className="hidden md:block">
-              <table className="w-full text-sm">
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full min-w-[720px] text-sm">
                 <thead>
                   <tr className="border-b border-zinc-100 text-left text-xs font-medium uppercase tracking-wide text-zinc-500 dark:border-zinc-800">
                     <th className="px-4 py-3 font-medium">Invoice</th>

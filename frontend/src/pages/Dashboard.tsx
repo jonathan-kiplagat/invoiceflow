@@ -36,7 +36,7 @@ function Stat({ label, value, icon, hint, tone = "default", to }: { label: strin
         <p className="text-[13px] font-medium text-zinc-500 dark:text-zinc-400">{label}</p>
         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${tones[tone]}`}>{icon}</span>
       </div>
-      <p className="tnum mt-2 break-words text-xl font-semibold tracking-tight sm:text-[22px]">{value}</p>
+      <p className="tnum mt-2 break-words text-[17px] font-semibold tracking-tight min-[400px]:text-lg sm:text-[22px]">{value}</p>
       {hint && <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{hint}</p>}
     </Card>
   );

@@ -48,7 +48,7 @@ export function RevenueChart({ data, currency, height = 260 }: { data: { month: 
 export function DonutChart({ slices, currency, center }: { slices: { name: string; value: number; color: string }[]; currency?: string; center?: { label: string; value: string } }) {
   const total = slices.reduce((a, s) => a + s.value, 0);
   return (
-    <div className="flex flex-col items-center gap-4 sm:flex-row">
+    <div className="flex min-w-0 flex-col items-center gap-4 sm:flex-row lg:flex-col 2xl:flex-row">
       <div className="relative h-40 w-40 shrink-0" role="img" aria-label={slices.map((s) => `${s.name}: ${currency ? money(s.value, currency) : s.value}`).join(", ")}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -66,7 +66,7 @@ export function DonutChart({ slices, currency, center }: { slices: { name: strin
           </div>
         )}
       </div>
-      <ul className="w-full space-y-2 text-sm">
+      <ul className="w-full min-w-0 space-y-2 text-sm">
         {slices.map((s) => (
           <li key={s.name} className="flex items-center justify-between gap-3">
             <span className="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">

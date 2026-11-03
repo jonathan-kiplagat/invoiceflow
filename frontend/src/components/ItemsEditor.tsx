@@ -101,53 +101,62 @@ export function ItemsEditor({ items, onChange, taxRates, pricingMode, currency, 
 
   return (
     <div>
-      {/* Desktop / tablet: table layout */}
+      {/* Desktop / tablet: description on its own line, figures aligned underneath */}
       <div className="hidden md:block">
-        <div className="grid grid-cols-[minmax(0,1fr)_76px_118px_118px_150px_120px_36px] gap-2 border-b border-zinc-100 pb-2 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:border-zinc-800">
-          <span>Item</span>
-          <span className="text-right">Qty</span>
-          <span className="text-right">Unit price</span>
-          <span>Discount</span>
-          <span>Tax</span>
-          <span className="text-right">Amount</span>
-          <span />
-        </div>
-        <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <ul className="space-y-3">
           {items.map((it, i) => {
             const err = showErrors ? itemErrors(it) : {};
             const line = computeLine(it, pricingMode);
             return (
-              <li key={i} className="group grid grid-cols-[minmax(0,1fr)_76px_118px_118px_150px_120px_36px] items-start gap-2 py-2.5">
-                <div>
-                  <Textarea
-                    rows={1}
-                    value={it.description}
-                    onChange={(e) => update(i, { description: e.target.value })}
-                    placeholder="Product or service"
-                    aria-label={`Item ${i + 1} description`}
-                    invalid={!!err.description}
-                    className="min-h-[40px] resize-y"
-                    maxLength={4000}
-                  />
-                  {err.description && <p className="mt-1 text-xs text-red-600">{err.description}</p>}
-                </div>
-                <Input inputMode="decimal" value={it.quantity} onChange={(e) => update(i, { quantity: e.target.value })} className="tnum text-right" aria-label={`Item ${i + 1} quantity`} invalid={!!err.quantity} />
-                <Input inputMode="decimal" value={it.unit_price} onChange={(e) => update(i, { unit_price: e.target.value })} className="tnum text-right" placeholder="0.00" aria-label={`Item ${i + 1} unit price`} invalid={!!err.unit_price} />
-                {discountInput(it, i, `d-${i}`, err.discount_value)}
-                {taxSelect(it, i, `t-${i}`)}
-                <div className="tnum pt-2.5 text-right text-sm font-medium">
-                  {amount(line.total)}
-                  {line.discount.gt(0) && <p className="text-[11px] font-normal text-zinc-500">−{amount(line.discount)}</p>}
-                </div>
-                <div className="flex flex-col items-center">
-                  <IconButton label={`Remove item ${i + 1}`} onClick={() => remove(i)} className="h-9 w-9 text-zinc-400 hover:text-red-600" disabled={items.length === 1}>
-                    <Trash2 className="h-4 w-4" />
-                  </IconButton>
-                  <div className="flex flex-col opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                    <button type="button" className="text-zinc-400 hover:text-zinc-800 disabled:opacity-30" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up"><ChevronUp className="h-4 w-4" /></button>
-                    <button type="button" className="text-zinc-400 hover:text-zinc-800 disabled:opacity-30" onClick={() => move(i, 1)} disabled={i === items.length - 1} aria-label="Move down"><ChevronDown className="h-4 w-4" /></button>
+              <li key={i} className="group rounded-xl border border-zinc-200 p-3 transition-colors focus-within:border-brand-300 dark:border-zinc-800 dark:focus-within:border-brand-700">
+                <div className="flex items-start gap-2">
+                  <span className="mt-2.5 w-6 shrink-0 text-center text-xs font-semibold text-zinc-400">{i + 1}</span>
+                  <div className="min-w-0 flex-1">
+                    <Textarea
+                      rows={1}
+                      value={it.description}
+                      onChange={(e) => update(i, { description: e.target.value })}
+                      placeholder="Product or service description"
+                      aria-label={`Item ${i + 1} description`}
+                      invalid={!!err.description}
+                      className="min-h-[40px] resize-y"
+                      maxLength={4000}
+                    />
+                    {err.description && <p className="mt-1 text-xs text-red-600">{err.description}</p>}
+                  </div>
+                  <div className="flex shrink-0 items-center">
+                    <IconButton label={`Move item ${i + 1} up`} onClick={() => move(i, -1)} disabled={i === 0} className="h-9 w-8 disabled:opacity-30"><ChevronUp className="h-4 w-4" /></IconButton>
+                    <IconButton label={`Move item ${i + 1} down`} onClick={() => move(i, 1)} disabled={i === items.length - 1} className="h-9 w-8 disabled:opacity-30"><ChevronDown className="h-4 w-4" /></IconButton>
+                    <IconButton label={`Duplicate item ${i + 1}`} onClick={() => duplicate(i)} className="h-9 w-8"><Copy className="h-4 w-4" /></IconButton>
+                    <IconButton label={`Remove item ${i + 1}`} onClick={() => remove(i)} className="h-9 w-8 hover:text-red-600 disabled:opacity-30" disabled={items.length === 1}>
+                      <Trash2 className="h-4 w-4" />
+                    </IconButton>
                   </div>
                 </div>
+                <div className="mt-2 grid grid-cols-[minmax(64px,0.6fr)_minmax(100px,1fr)_minmax(110px,1fr)_minmax(130px,1.3fr)_minmax(100px,1fr)] items-start gap-2 pl-8">
+                  <label className="block min-w-0">
+                    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-zinc-500">Qty</span>
+                    <Input inputMode="decimal" value={it.quantity} onChange={(e) => update(i, { quantity: e.target.value })} className="tnum text-right" aria-label={`Item ${i + 1} quantity`} invalid={!!err.quantity} />
+                  </label>
+                  <label className="block min-w-0">
+                    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-zinc-500">Unit price</span>
+                    <Input inputMode="decimal" value={it.unit_price} onChange={(e) => update(i, { unit_price: e.target.value })} className="tnum text-right" placeholder="0.00" aria-label={`Item ${i + 1} unit price`} invalid={!!err.unit_price} />
+                  </label>
+                  <div className="min-w-0">
+                    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-zinc-500">Discount</span>
+                    {discountInput(it, i, `d-${i}`, err.discount_value)}
+                  </div>
+                  <div className="min-w-0">
+                    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-zinc-500">Tax</span>
+                    {taxSelect(it, i, `t-${i}`)}
+                  </div>
+                  <div className="min-w-0 text-right">
+                    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-zinc-500">Amount</span>
+                    <p className="tnum pt-2 text-sm font-semibold">{amount(line.total)}</p>
+                    {line.discount.gt(0) && <p className="tnum text-[11px] text-zinc-500">incl. −{amount(line.discount)} discount</p>}
+                  </div>
+                </div>
+                {(err.quantity || err.unit_price || err.discount_value) && <p className="mt-1 pl-8 text-xs text-red-600">{err.quantity ?? err.unit_price ?? err.discount_value}</p>}
               </li>
             );
           })}

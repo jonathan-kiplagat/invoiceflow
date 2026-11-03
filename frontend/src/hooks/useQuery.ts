@@ -54,7 +54,11 @@ export function useQuery<T>(fetcher: (signal: AbortSignal) => Promise<T>, deps: 
           return;
         }
       }
-      setError(errorMessage(e));
+      setError(
+        e instanceof ApiError && e.network
+          ? "You're offline, and this page hasn't been saved on this device yet. Open it once while online to have it available offline."
+          : errorMessage(e),
+      );
     } finally {
       if (!c.signal.aborted) setLoading(false);
     }
