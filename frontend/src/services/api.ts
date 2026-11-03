@@ -54,9 +54,11 @@ export const auth = {
   get session() {
     return session;
   },
-  subscribe(fn: (s: Session | null) => void) {
+  subscribe(fn: (s: Session | null) => void): () => void {
     listeners.add(fn);
-    return () => listeners.delete(fn);
+    return () => {
+      listeners.delete(fn);
+    };
   },
   setTokens(t: Tokens, user: User | null = session?.user ?? null) {
     saveSession({ access_token: t.access_token, refresh_token: t.refresh_token, user });
