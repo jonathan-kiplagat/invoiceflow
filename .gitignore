@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/dev-dist/
+*.tsbuildinfo
+.vite/
+
+# Databases & local data
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite3
+backend/uploads/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Test & tooling output
+coverage/
+htmlcov/
+.coverage
+test-results/
+playwright-report/
+tests/e2e/artifacts/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.log
